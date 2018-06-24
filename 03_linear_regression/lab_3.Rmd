@@ -5,6 +5,12 @@ date: "4/23/2018"
 output: md_document
 ---
 
+# Lab 3: Linear Regression
+
+*4/23/2018*  
+
+***  
+
 ```{r setup, echo = FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, error = FALSE)
 ```
