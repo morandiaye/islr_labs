@@ -1,0 +1,233 @@
+---
+title: "Lab 3: Linear Regression"
+author: "Rich Pauloo"
+date: "4/23/2018"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Libraries and Data
+
+Load libraries. Use `Boston` data set in `MASS`.
+```{r}
+library(MASS)
+library(ISLR)
+```
+
+```{r}
+names(Boston)
+#?Boston
+```
+
+
+***
+
+
+# Simple Linear Regression
+
+Fit a simple linear model with `medv` (median value of owner occupied homes) as the response **Y**, and `lstat` as the single predictor, **X**.
+```{r}
+lm.fit <- lm(medv~lstat, data = Boston)
+lm.fit
+```
+
+Get a summary of the linear model fit. `lstat` explains about 54% of the variance in `medv`, and is significant. That is, the p-value of $\beta_{1}$ is sufficiently low to reject $H_{0}: \beta_{1} = 0$, and accept $H_{a}: \beta_{1} \ne 0$.  
+
+```{r}
+summary(lm.fit)
+```
+
+What are the data stored in the linear model fit? We can extract them list-style (`lm.fit$coefficients`), or with extractor functions.
+```{r}
+names(lm.fit)
+coef(lm.fit)
+```
+
+In order to obtain the confidence intervals for the coefficient estimates, we use the `confint()` command.
+```{r}
+confint(lm.fit)
+```
+
+The `predict()` function can be used to prodice confidence intervals and prediction intervals for the prediction of `medv` for a given value of `lstat`.
+```{r}
+# create some testing data
+test_set <- data.frame(lstat = c(5,10,15))
+
+# use the model to predict Y for these new x.
+predict(lm.fit,
+        test_set,
+        interval = "confidence") # confidence interval
+
+# prediction interval
+predict(lm.fit,
+        test_set,
+        interval = "prediction") # prediction interval
+```
+
+Confidence and prediction intervals are centered around the same point, but prediction intervals are wider.  
+
+Now we plot `medv` and `lstat` along with the least squartes fit. We will also attach `Boston` to search path so that we don't have to call `data = Boston` as a argument in every `plot` or `lm` call.
+```{r}
+attach(Boston) 
+plot(lstat, medv)
+abline(lm.fit, lwd = 2, col = "red")
+```
+
+Examine the diagnostic plots.
+```{r}
+par(mfrow=c(2,2)) # set up graphical device to view all plots at once
+plot(lm.fit) 
+```
+
+Alternatively, we can obtain residuals and studdentized residuals with `residuals()`, `rstudent()`, and plot them on our own.
+```{r}
+plot(predict(lm.fit), residuals(lm.fit))
+
+library(tidyverse)
+data.frame(fitted_vals = predict(lm.fit), 
+           residuals = residuals(lm.fit)) %>% 
+  ggplot(aes(fitted_vals, residuals)) +
+  geom_point() +
+  geom_smooth()
+
+##
+plot(predict(lm.fit), rstudent(lm.fit))
+```
+
+On the basis of residual plots, there is some non-lineary in the residuals, indicating a function that is not entirely linear. We should consider high leverage points that might influence our model. We can compute leverage statistics using the `hatvalues()` function. In general, if  
+
+$h_{i} > \frac{p+1}{n}$  
+
+we suspect that a point has high leverage. It appears that none of our points has a leverage statistic large enough to cause concern.
+```{r}
+plot(hatvalues(lm.fit))
+
+# which max tells us the index of the point with the highest leverage
+which.max(hatvalues(lm.fit))
+
+# find threshold for high leverage points
+p <- summary(lm.fit)$coefficients %>% nrow() -1
+n <- nrow(Boston)
+threshold <- p + 1 / n
+```
+
+
+***
+
+
+## Multiple Linear Regression
+
+Now to fit a multiple linear regression using least squares, we use `lm()`. Syntax is `lm(y ~ x1 + x2 + x3)`. `summary()` now shows the coefficients for all predictors in the model.
+
+```{r}
+lm.fit <- lm(medv ~ lstat + age, data = Boston)
+summary(lm.fit)
+```
+
+Shorthand for **all** predictors is `.` Also, you can access specific components of the summary with `summary(lm.fit)$r.squared` etc...
+```{r}
+lm.fit <- lm(medv ~ . , data = Boston)
+summary(lm.fit)
+names(summary(lm.fit)) # all the components of the summary
+
+summary(lm.fit)$r.squared # get model r squared
+summary(lm.fit)$coefficients # get model coefficients
+```
+
+In a multiple linear regression with many predictors, its possible that one or more predictors are collinaer with each other. The importance of a predictor might be masked by the presence of collinerarity. This introduces uncertainty into the estimate of $\beta_{j}$, which in turn influences the standard error, and t-statistic, and inflates the p-value, which might lead to failing to reject $H_{0}: \beta_{j} = 0$. 
+
+The **variance inflation factor**, or VIF, is a measure of collinearity. As a rule of thumb, VIF values > 5 or 10 indicate problematic collinearity. We can calculate VIF with the `cars` package.
+```{r}
+library(car)
+vif(lm.fit)
+```
+None of our predictors exhibit problematic collinearity above our threshold of VIF = 10, but some, such as `rad`, and `tax` are moderate for this data. If any predictors exceeded our threshold, we could combine predictors, or drop ones that provide redundant information.   
+
+
+***
+
+
+# Interaction Terms
+
+Include interaction terms in a linear model within `lm()`. The syntax `lstat:black` tells R to include an interaction term between `lstat` and `black`. Moreover, the syntax `lstat*age` is shorthand for `lstat + age + lstat:age`.
+```{r}
+summary(lm(medv ~ lstat*age, data = Boston))
+```
+
+
+***
+
+
+# Non Linear Transformations of Predictors
+
+The `lm()` fcuntion can also accomodate non-linear transformations of predictors. For example, for a given predictor $X$, we can create a predictor $X^2$, with the syntax `I(X^2)`. The function `I()` is necessary. Let's compare the coefficients for $lstat$ and $lstat^2$.
+```{r}
+summary(lm(medv ~ lstat + I(lstat^2), data = Boston))
+```
+
+The near-zero p-value associated with the quadratic term suggests that it leads to an improved model. We can use the `anova()` function to further quantify the extent to which the quadratic model is superior to the linear fit. 
+```{r}
+lm.fit <- lm(medv ~ lstat)
+lm.fit2 <- lm(medv ~ lstat + I(lstat^2))
+
+anova(lm.fit, lm.fit2)
+```
+
+Here the `anova()` function performs a hypothesis test comparing the two models.  
+
+$H_{0}:$ *both models fit the data equally well*  
+$H_{a}:$ *the full model is superior*  
+
+We see that the F statistic is very high and the p-value is very small for Model 2 (including the quadratic fit), indicating that the model which includes a quadratic term outperforms the linear model. Examining the residuals for the model with the quadratic term, we see that little evidence for nonlinearity in the residuals.
+ 
+```{r}
+par(mfrow=c(2,2))
+plot(lm.fit2)
+```
+
+To test multiple polynomial fits, use `ploy()`.
+```{r}
+lm.fit7 <- lm(medv ~ poly(lstat, 7))
+summary(lm.fit7)
+```
+
+This suggests that including polynomial terms up to the fith order ($X^5$) improves model fit, with non-significant results for $X^6$ and higher.
+
+We can of course use other transformations besides polynomials.
+```{r}
+summary(lm(medv ~ log(rm)))
+```
+
+***
+
+# Qualitative Predictors
+
+Now examine `Carseats` data, part of ISLR. Predict `sales` (child car seta sales) in 400 locations based on a set of predictors (X).
+```{r}
+names(Carseats) # response and predictors
+```
+
+`ShelveLoc` is a quantitative variable that takes on three values: *Bad*, *Medium*, and *Good*. Given qualitative variables, R automatically generates dummy variables. Here we fit a multiple regression with interation terms and dummy variables.
+```{r}
+lm.fit <- lm(Sales ~ . + Income:Advertising + Price:Age, data = Carseats)
+summary(lm.fit)
+```
+
+The `contrasts()` function returns the coding that R uses for dummy variables.
+```{r}
+attach(Carseats)
+contrasts(ShelveLoc)
+```
+
+R created 2 dummary variables: `ShelveLocGood` that equals 1 if the location is good, and 0 otherwise, and `ShelvLocMedium` that equals 1 if the location is medium and 0 otherwise. Bad shelving location is 0 for both variables. `ShelvLocGood` and `ShelvLocMedium` are both significant, but `ShelvLocGood` has a high $\beta$, indicating that a good shelving location leads to better sales than a medium or low shelving location.  
+
+
+
+
+
+
+
+

@@ -1,0 +1,375 @@
+---
+title: "ISLR Lab 4"
+author: "Rich Pauloo"
+date: "4/27/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Libraries and Data
+
+Use the `ISLR` library and `Smarket` data.  
+```{r}
+library(ISLR)
+names(Smarket)
+dim(Smarket)
+summary(Smarket)
+```
+
+`cor()` - correlation matrix. Arguments must be numeric.
+```{r}
+cor(Smarket)
+
+# numeric - remove up/down
+cor(Smarket[,-9])
+
+# visualize
+pairs(Smarket[,-9])
+
+# visualize corelation matrix
+library(ggcorrplot)
+ggcorrplot(cor(Smarket[,-9]), type = "lower",
+           hc.order = TRUE) + 
+  labs(title = "Correlation Matrix")
+```
+
+The only substantial correaltion is between `Year` and `Volume`. `Volume` increases over time.
+```{r}
+plot(Smarket$Volume)
+```
+
+
+***
+
+
+# Logistic Regression
+
+Predict direction using `Lag1` through `Lag5`, and `Volume`. The `glm()` function fits *generalized linear models*, a class of models which includes logistic regression. Syntax is the same as `lm()`, but we must specify `family = binomial` to let R know that our response variable is binomial. 
+
+```{r}
+attach(Smarket)
+
+glm.fits <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, 
+                family = binomial, 
+                data = Smarket)
+
+summary(glm.fits)
+```
+
+Smallest p-value associated with `Lag1`. Negative $\beta_{Lag1}$ suggests that if the market had a positive day yesterday, it is less likely to go up today. 
+
+```{r}
+coef(glm.fits) # get all beta coefficients
+summary(glm.fits)$coefficients
+```
+
+We can make predicitons with this model using `predict()`. The argument `type = "response` tells R to out probabilities as $P(Y = 1|X)$, as opposed to the logit. Since we don't supply any other information to predict, the model computes probabilties for the training data. We use `contrasts()` to check how R encoded the response variable in this case, and see that `1` corresponds to the market going up, while `0` corresponds to it going down. 
+```{r}
+glm.probs <- predict(glm.fits, type = "response") # predicts Y given model and training data
+glm.probs[1:10]
+
+# what were the directions assigned to "Direction"?
+contrasts(Direction)
+```
+
+To convert these predicitons into a factor "Up" or "Down", we do:
+```{r}
+glm.pred = rep("Down", 1250) # 1250 == nrow(Smarket)
+glm.pred[glm.probs > .5] = "Up"
+```
+
+Create a confusion matrix with `table()`
+```{r}
+# view the predicitons
+table(glm.pred, Direction)
+
+# % correct
+(507+145)/1250
+
+mean(glm.pred == Direction)
+```
+
+52% seems a bit better than randomly guessing, but this is our **training error rate**.  
+
+For more realistic error rate, split data into train and test data sets. 2001-2004 = train, 2005 = test.
+```{r}
+train = (Smarket$Year < 2005)
+test = Smarket[!train, ]
+
+dim(test) # testing on 252 rows
+
+direction_test <- Smarket$Direction[!train]
+```
+
+Train the model on 2001-2004, and test on 2005. Use argument `subset`.
+```{r}
+# train
+glm.fits <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, 
+                family = binomial, 
+                data = Smarket,
+                subset = train)
+
+# predict test data
+glm.probs = predict(glm.fits, 
+                    test,
+                    type = "response")
+
+```
+
+```{r}
+# convert probs to factor
+glm.pred = rep("Down", 252)
+glm.pred[glm.probs > .5] = "Up"
+
+# confusion matrix
+table(glm.pred, direction_test)
+mean(glm.pred == direction_test)
+```
+
+The model performs worse than guessing at random!  
+
+Try removing predictors that had very high p-values.  
+```{r}
+glm.fits = glm(Direction ~ Lag1 + Lag2, 
+                family = binomial, 
+                data = Smarket,
+                subset = train)
+
+glm.probs = predict(glm.fits, 
+                    test,
+                    type = "response")
+
+glm.pred = rep("Down", 252)
+glm.pred[glm.probs > .5] = "Up"
+table(glm.pred, direction_test)
+mean(glm.pred==direction_test)
+```
+
+This results in model thatperforms a bit beter than randomly guessing.  
+
+To predict on specific days, feed them into a new df:
+```{r}
+predict(glm.fits, newdata = data.frame(Lag1 = c(1.2,1.5), Lag2 = c(1.1,-0.8), type = "response"))
+```
+
+
+***
+
+
+# Linear Discriminat Analysis. 
+
+Use `lda()` in the `MASS` library. Same sytax as `lm()` and `glm()`.
+```{r}
+library(MASS)
+lda.fit <- lda(Direction ~ Lag1 + Lag2, 
+               data = Smarket,
+               subset = train)
+lda.fit
+```
+
+**Prior probabilties of groups** are $\pi_{k}$ (p. 138).  
+
+**Group means** are class-specific means $\mu_{k}$ (p. 143).  
+
+**Coefficients of linear discrimination** are multiplier of the elements of $X = x$ in (4.19), (p.143).  
+
+
+***  
+
+Use `predict()`.
+```{r}
+lda.predict <- predict(lda.fit, test)
+names(lda.predict)
+```
+
+**class** predicts market movement.  
+
+**psoterior** predicts the probability that an observation belongs to the a class $k$.  
+
+**x** contains the linear discriminants, derived from the coefficients of linear discrimination. High values predict market increase, and low values predict a market decline.  
+
+***  
+
+How does the model perform?
+```{r}
+lda.class = lda.predict$class
+
+table(lda.class, direction_test)
+mean(lda.class == direction_test)
+```
+
+Applying an LDA to the data produces a similar result to the multiple logistic regression.  
+
+We can use a different posterior probability threshold other than 50% to make predictions.  
+
+```{r}
+sum(lda.predict$posterior[,1] > .9) 
+```
+
+On zero days was the posterior probability of a market increase greater than .9  
+
+
+***
+
+
+# Quadratic Discriminant Analysis
+
+Use `qda()` in `MASS`. Identical syntax to `lda()`.  
+```{r}
+qda.fit <- qda(Direction ~ Lag1 + Lag2,
+               data = Smarket,
+               subset = train)
+
+qda.fit
+
+```
+
+Contains prior probabilities of groups ($\pi_{k}$) and group means ($\mu_{k}$), but because the discriminants are quadratic and less interpretable, it does not contain the coefficients.  
+
+```{r}
+qda.class <- predict(qda.fit, test)$class
+
+table(qda.class, direction_test)
+mean(qda.class == direction_test)
+```
+
+QDA predictions are accurate about 60% of the time. Not bad.  
+
+
+***
+
+
+# K-Nearest Neighbors
+
+Use `knn()` in `class` library. No fitting and predicting, just a single function with 4 arguments:  
+
+* matrix of training predictors  
+* matrix of testing predictors  
+* vector of class labels for training  
+* value for **K**, the number of nearest neighbors used by the classifier  
+
+```{r}
+# these all work nicely because we attached Smarket earlier and can just call column names
+library(class)
+train_x = cbind(Lag1, Lag2)[train, ]
+test_x = cbind(Lag1, Lag2)[!train, ]
+train_direction = Smarket$Direction[train] # if Smarket wasn't attached, we'd have to write like this
+```
+
+Set a random seed before running `knn()` because in the event of ties, R randomly breaks ties, and we want reproducible results. 
+```{r}
+set.seed(1)
+knn.pred = knn(train_x, test_x, train_direction, k = 1)
+
+table(knn.pred, direction_test)
+mean(knn.pred == direction_test)
+```
+
+Results of `k=1` are not good. Only 50% of observations are predicted! `K=1` might be overly flexible and overfitted to the training data. Let's try `k=3`.
+```{r}
+set.seed(1)
+knn.pred = knn(train_x, test_x, train_direction, k = 3)
+
+table(knn.pred, direction_test)
+mean(knn.pred == direction_test)
+```
+
+With `k=3` we see a slight improvement. Try a higher k.
+
+```{r}
+set.seed(1)
+knn.pred = knn(train_x, test_x, train_direction, k = 4)
+
+table(knn.pred, direction_test)
+mean(knn.pred == direction_test)
+```
+
+Increasing k past 3 offers no more improvement. QDA provides the best fit to the data thus far. This is likely because the covariance matricies $\Sigma_{k}$ are not equal for each class, and the **Bayes decision boundary** between classes is non-linear, thus us is better predicted by a quadratic function.  
+
+
+***  
+
+# An Application to Caravan Insurance Data
+
+Apply KNN to `Caravan` dataset, part of `ISLR`. 6% of people out of 5,822 individuals purchase a caravan, and we have 85 predictors about them.  
+
+```{r}
+dim(Caravan)
+attach(Caravan)
+summary(Purchase)
+348/5474
+```
+
+The KNN classifier classifies based on **distance**, therefore, it's really sensitive to predictors with large scales. For example, if `age` was a predictor, we would obtain different results from KNN if we represented `age` as years, months, minutes, and microseconds. 12 months is much more distance than 1 year to KNN. To get around this behavior, we standardize each of the continuous variables using `scale()`. This makes every column of data have a standard deviation of 1 and a mean of 0. 
+```{r}
+standardized_x = scale(Caravan[,-86]) # exclude the qualitative "Purchase" variable
+```
+
+We now split observations into test and train.
+```{r}
+test = 1:1000 # make first 1,000 observations test data
+
+# train
+train_x <- standardized_x[-test, ] # trainig predictors (x) are the remining observations
+train_y <- Purchase[-test] # training response (y)
+
+# test
+test_x <- standardized_x[test, ] # testing predictors (x)
+test_y <- Purchase[test] # test response (y) - to measure accuracy of the model fit to training data
+
+# set random seed for reproducibility
+set.seed(1)
+
+# run model
+knn_pred <- knn(train_x, test_x, train_y, k = 1)
+sum(test_y != knn_pred) / 1000 # overall error is 11%
+sum(test_y != "No") / 1000 # only 6% of people in test set actually bought a Caravan
+```
+
+11% may seem like a good error rate, but since only 6% of customers purchased insurance, we can get the error rate down to 6% if we **always predicted "No"**. What we are really intersted in is the True Postive rate. In other words, how many times did the model predicit an insurance sale, when an insurance sale actually happened? We can calculate this from a confusion matrix of the predicted and actual test response. Specifically (p.149), the $Precision = TP / (TP + FP)$ tells us how precise our prediction was.
+```{r}
+table(test_y, knn_pred)
+9/(68 + 9) # we predict 11% of the people that actually buy insurance. That's about twice as good as randomly guessing!
+```
+
+Let's try again with `K=3`
+```{r}
+set.seed(1)
+knn_pred <- knn(train_x, test_x, train_y, k = 3)
+table(test_y, knn_pred)
+5 / (5 + 20) # wow! now we move from 11% to 20% precision!
+
+set.seed(1)
+# by increasing k to 5, we can get 27% precision. That's 4x better than guessing!
+knn_pred <- knn(train_x, test_x, train_y, k = 5)
+table(test_y, knn_pred)
+4 / (4 + 11)
+```
+
+For comparison, let's fit a logistic regression to the data. Recall that logistic regression uses a .5 probability cutoff, which we can modify. 
+```{r}
+set.seed(1)
+glm_fit <- glm(Purchase ~ ., data = Caravan, family = binomial, subset = -test)
+
+glm_prob = predict(glm_fit, Caravan[test, ], type = "response")
+glm_pred = rep("No", 1000)
+glm_pred[glm_prob > .5] = "Yes"
+
+table(test_y, glm_pred) # this is terrible! with a cutoff probablity of .5, we obtain 0 TP of the 59 possible
+
+# try again with a cutoff of .25
+glm_pred = rep("No", 1000)
+glm_pred[glm_prob > .25] = "Yes"
+table(test_y, glm_pred) 
+11 / (11 + 22) # 33% is really good! That's 5-6 times as good as random guessing!
+```
+
+
+
+
+
+
+
