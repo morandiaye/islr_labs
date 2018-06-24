@@ -164,13 +164,11 @@ Alternatively, we can obtain residuals and studdentized residuals with
 On the basis of residual plots, there is some non-lineary in the
 residuals, indicating a function that is not entirely linear. We should
 consider high leverage points that might influence our model. We can
-compute leverage statistics using the `hatvalues()` function. In
-general, if
+compute leverage statistics using the `hatvalues()` function.
 
-$h\_{i} &gt; \\frac{p+1}{n}$
-
-we suspect that a point has high leverage. It appears that none of our
-points has a leverage statistic large enough to cause concern.
+In general, if $h\_{i} &gt; \\frac{p+1}{n}$ we suspect that a point has
+high leverage. It appears that none of our points has a leverage
+statistic large enough to cause concern.
 
     plot(hatvalues(lm.fit))
 

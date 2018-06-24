@@ -1,12 +1,18 @@
 ---
-title: "ISLR Lab 4"
+title: "Lab 4: Classification"
 author: "Rich Pauloo"
 date: "4/27/2018"
-output: html_document
+output: md_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Lab 4: Classification
+
+*4/27/2018*  
+
+***  
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, error = FALSE)
 ```
 
 # Libraries and Data
@@ -19,7 +25,7 @@ dim(Smarket)
 summary(Smarket)
 ```
 
-`cor()` - correlation matrix. Arguments must be numeric.
+`cor()` generates a correlation matrix. Arguments must be numeric.
 ```{r}
 cor(Smarket)
 
@@ -36,7 +42,7 @@ ggcorrplot(cor(Smarket[,-9]), type = "lower",
   labs(title = "Correlation Matrix")
 ```
 
-The only substantial correaltion is between `Year` and `Volume`. `Volume` increases over time.
+The only substantial correlation is between `Year` and `Volume`. `Volume` increases over time.
 ```{r}
 plot(Smarket$Volume)
 ```
