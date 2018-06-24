@@ -27,7 +27,7 @@ summary(Smarket)
 
 `cor()` generates a correlation matrix. Arguments must be numeric.
 ```{r}
-cor(Smarket)
+#cor(Smarket) - will not work!
 
 # numeric - remove up/down
 cor(Smarket[,-9])
@@ -373,6 +373,7 @@ table(test_y, glm_pred)
 11 / (11 + 22) # 33% is really good! That's 5-6 times as good as random guessing!
 ```
 
+Using a cutoff of .25, we obtain a success rate of about 33%! This is about 5 to 6 times better than random guessing. 
 
 
 
