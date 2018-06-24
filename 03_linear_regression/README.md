@@ -6,7 +6,7 @@ Load libraries. Use `Boston` data set in `MASS`.
     library(MASS)
     library(ISLR)
 
-    ## Warning: package 'ISLR' was built under R version 3.4.2
+Inspect the dataframe.
 
     names(Boston)
 
@@ -120,8 +120,8 @@ will also attach `Boston` to search path so that we don't have to call
 `data = Boston` as a argument in every `plot` or `lm` call.
 
     attach(Boston) 
-    plot(lstat, medv)
-    abline(lm.fit, lwd = 2, col = "red")
+    plot(lstat, medv) # plot the variables
+    abline(lm.fit, lwd = 2, col = "red") # add the OLS line
 
 ![](lab_3_files/figure-markdown_strict/unnamed-chunk-8-1.png)
 
@@ -139,25 +139,6 @@ Alternatively, we can obtain residuals and studdentized residuals with
 
     library(tidyverse)
 
-    ## Loading tidyverse: ggplot2
-    ## Loading tidyverse: tibble
-    ## Loading tidyverse: tidyr
-    ## Loading tidyverse: readr
-    ## Loading tidyverse: purrr
-    ## Loading tidyverse: dplyr
-
-    ## Warning: package 'tibble' was built under R version 3.4.3
-
-    ## Warning: package 'purrr' was built under R version 3.4.2
-
-    ## Warning: package 'dplyr' was built under R version 3.4.2
-
-    ## Conflicts with tidy packages ----------------------------------------------
-
-    ## filter(): dplyr, stats
-    ## lag():    dplyr, stats
-    ## select(): dplyr, MASS
-
 ![](lab_3_files/figure-markdown_strict/unnamed-chunk-10-1.png)
 
     data.frame(fitted_vals = predict(lm.fit), 
@@ -165,8 +146,6 @@ Alternatively, we can obtain residuals and studdentized residuals with
       ggplot(aes(fitted_vals, residuals)) +
       geom_point() +
       geom_smooth()
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 
 ![](lab_3_files/figure-markdown_strict/unnamed-chunk-10-2.png)
 
@@ -311,24 +290,6 @@ As a rule of thumb, VIF values &gt; 5 or 10 indicate problematic
 collinearity. We can calculate VIF with the `cars` package.
 
     library(car)
-
-    ## Warning: package 'car' was built under R version 3.4.4
-
-    ## Loading required package: carData
-
-    ## Warning: package 'carData' was built under R version 3.4.4
-
-    ## 
-    ## Attaching package: 'car'
-
-    ## The following object is masked from 'package:dplyr':
-    ## 
-    ##     recode
-
-    ## The following object is masked from 'package:purrr':
-    ## 
-    ##     some
-
     vif(lm.fit)
 
     ##     crim       zn    indus     chas      nox       rm      age      dis 

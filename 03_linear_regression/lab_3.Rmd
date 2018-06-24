@@ -5,8 +5,8 @@ date: "4/23/2018"
 output: md_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, error = FALSE)
 ```
 
 # Libraries and Data
@@ -17,6 +17,7 @@ library(MASS)
 library(ISLR)
 ```
 
+Inspect the dataframe.
 ```{r}
 names(Boston)
 #?Boston
@@ -72,8 +73,8 @@ Confidence and prediction intervals are centered around the same point, but pred
 Now we plot `medv` and `lstat` along with the least squartes fit. We will also attach `Boston` to search path so that we don't have to call `data = Boston` as a argument in every `plot` or `lm` call.
 ```{r}
 attach(Boston) 
-plot(lstat, medv)
-abline(lm.fit, lwd = 2, col = "red")
+plot(lstat, medv) # plot the variables
+abline(lm.fit, lwd = 2, col = "red") # add the OLS line
 ```
 
 Examine the diagnostic plots.
