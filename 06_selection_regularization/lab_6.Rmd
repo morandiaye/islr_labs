@@ -1,0 +1,34 @@
+---
+title: "Lab 6: Linear Model Selection and Regularization"
+author: "Rich Pauloo"
+date: "7/22/2018"
+output: md_document
+---
+
+# Lab 6: Resampling Methods
+
+In the regression setting, the standard linear model $Y = \beta_0 - \beta_1X_1 + ... + \beta_pX_p + \epsilon$ can fail in a few settings.  
+
+Consider data with $n >> p$, that is, the number of observations greatly exceed the number of predictors. This model will tend to have low variance on test data. For data where $n$ is not much larger than $p$, there will be a lot of variance on the test set. When $p > n$, there is no longer a unique least squares estimate of the regression coefficients, and the variance is technically infinite!  
+
+For another example, consider a model with a large number of predictors $p$. A regression with multiple predictors will be challenging to interpret. Many predictors will not be associated with the response, leading to unnecessary complexity in the model specification.  
+
+**Subset selection** is a way to reduce the number of predictors used in a regression.  
+
+**Ridge regression and the Lasso** are ways to perform *shrinkage* on the predictors. Shrinkage is also referred to as *regularization*.  
+
+**PCR, and PLS regression** are methods to abstract the predictors in principal components, and reduce the dimensionality of the predictor space.  
+
+* Subset Selection  
+* Ridge Regression and the Lasso  
+* PCR and PLS Regression  
+
+*7/22/2018*  
+
+***  
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, error = FALSE)
+```
+
+## 5.3.1 The Validation Set Approach
