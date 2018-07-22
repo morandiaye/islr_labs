@@ -120,7 +120,7 @@ cv_err$delta
 
 The `delta` element gies us cross validation results: the LOOCV estimate, which is defined as the average test MSE estimates.  
 
-$$CV_{n} = \frac{1}{n}\sum_{i = 1}^{n}MSE_{i}$$  
+$CV_{n} = \frac{1}{n}\sum_{i = 1}^{n}MSE_{i}$   
 
 We can repeat this procedure for increasingly complex polynomial fits. To automate the process, we use the `for()` function to initiate a for loop which iteratively fits polynomial regressions for polynomials of order i = 1 to i = 5, computes the associated cross-validation error, and stores it in the ith element of the vector cv.error. We begin by initializing the vector. 
 
