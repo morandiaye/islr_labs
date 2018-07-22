@@ -207,7 +207,7 @@ The final output shows that using the original data, $\hat{\alpha}$ = 0.5758, an
 
 ### Estimating the Accuracy of a Linear Regression Model
 
-The bootstrap approach can be used to assess the variability of the coefficient estimates and predictions from a statistical learning method. Here we use the bootstrap approach in order to assess the variability of the estimates for $\beta_0$ and $\beta_1$, the intercept and slope terms for the linear regression model that uses horsepower to predict mpg in the Auto data set. We will compare the estimates obtained using the bootstrap to those obtained using the formulas for $SE(\hat{\beta_0})$ and $SE(\hat{\beta_1})$ described in Section 3.1.2.  
+The bootstrap approach can be used to assess the variability of the coefficient estimates and predictions from a statistical learning method. Here we use the bootstrap approach in order to assess the variability of the estimates for $\beta_0$ and $\beta_1$, the intercept and slope terms for the linear regression model that uses horsepower to predict mpg in the Auto data set. We will compare the estimates obtained using the bootstrap to those obtained using the formulas for \\(SE(\hat{\beta_0})\\) and $SE(\hat{\beta_1})$ described in Section 3.1.2.  
 
 We first create a simple function, `boot.fn()`, which takes in the Auto data set as well as a set of indices for the observations, and returns the intercept and slope estimates for the linear regression model. We then apply this function to the full set of 392 observations in order to compute the estimates of $\beta_0$ and $\beta_1$ on the entire data set using the usual linear regression coefficient estimate formulas from Chapter 3. 
 

@@ -281,8 +281,8 @@ variability of the estimates for *β*<sub>0</sub> and *β*<sub>1</sub>,
 the intercept and slope terms for the linear regression model that uses
 horsepower to predict mpg in the Auto data set. We will compare the
 estimates obtained using the bootstrap to those obtained using the
-formulas for $SE(\\hat{\\beta\_0})$ and $SE(\\hat{\\beta\_1})$ described
-in Section 3.1.2.
+formulas for \\(SE()\\) and $SE(\\hat{\\beta\_1})$ described in Section
+3.1.2.
 
 We first create a simple function, `boot.fn()`, which takes in the Auto
 data set as well as a set of indices for the observations, and returns
