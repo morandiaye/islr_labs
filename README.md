@@ -6,5 +6,5 @@ Each folder contains 3 items:
 
 1. a folder of the figures geenrated in the lab  
 2. a `.Rmd` (RMarkdown) script with the code for the lab  
-3. a `README.md` file which displays the code and figures for the lab directly on github  
+3. a `README.md` or `.ipnb` which displays the code and figures for the lab directly on github  
 
