@@ -1,5 +1,5 @@
 ---
-output: github_document
+output: md_document
 ---
 
 # 8.3 Lab: Decision Trees
