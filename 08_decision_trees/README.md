@@ -48,9 +48,8 @@ error rate.
 We see that the training error rate is 9%. For classification trees, the
 deviance reported in the output of `summary()` is given by.
 
-\begin{equation}
--2 \sum_m \sum_k n_{mk}log (\hat{p}_{mk})
-\end{equation}
+$$-2 \\sum\_m \\sum\_k n\_{mk}log (\\hat{p}\_{mk})$$
+
 Where *n*<sub>*m**k*</sub> is the number of observations in the
 *m*<sup>*t**h*</sup> terminal node belonging to the *k*<sup>*t**h*</sup>
 class. A small deviance indicates a tree that provides a good fit to the
