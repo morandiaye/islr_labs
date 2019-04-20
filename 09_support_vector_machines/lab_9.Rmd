@@ -1,0 +1,8 @@
+---
+output: md_document
+---
+
+# 9.6 Lab: Support Vector Machines  
+
+## 9.6.1 Support Vector Classifier
+
