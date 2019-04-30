@@ -6,3 +6,4 @@ output: md_document
 
 ## 9.6.1 Support Vector Classifier
 
+to do
