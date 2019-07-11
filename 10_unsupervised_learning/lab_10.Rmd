@@ -2,8 +2,9 @@
 output: md_document
 ---
 
-```{r, include=FALSE}
+```{r, include=FALSE, echo = FALSE, warning =FALSE, message=FALSE}
 library(knitr)
+library(tidyverse)
 opts_chunk$set(out.width='100%')
 ```
 
@@ -33,7 +34,6 @@ apply(USArrests, 2, var)
 ```
 
 ```{r}
-library(tidyverse)
 gather(USArrests, stat, value) %>% 
   ggplot(aes(value)) +
   geom_histogram(bins = 50) +
@@ -95,7 +95,7 @@ biplot(pr.out,
        xlab  = "First Principal Component",
        ylab  = "Second Principal Component",
        arrow.len = 0.05)
-abline(v=0, h=0, cex=0.5, col = 'lightgrey', lty=3)
+abline(v=0, h=0, cex=0.5, col = 'grey', lty=3)
 ```
 
 Figure 10.1 plots the first two principal components of these data. The figure represents both the principal component scores and the loading vectors in a single biplot display. The loadings are also given in Table 10.1.
@@ -140,7 +140,6 @@ ggplot(pve, aes(pc, val)) +
   geom_line() +
   facet_wrap(~stat, labeller = lab) +
   labs(x = "Principal Component", y = "Proportion") +
-  theme_minimal() +
   theme(panel.grid.minor = element_blank())
 ```
 
